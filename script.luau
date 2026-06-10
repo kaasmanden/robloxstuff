@@ -153,34 +153,25 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 			followConn = nil
 		end
 
-		local targetChar: Model? = target.Character
+		local targetChar = target.Character
 		if not targetChar then
-			warn(`No target character found`)
+			warn("No target character found")
 			return false
 		end
 
 		local PathfindingService = game:GetService("PathfindingService")
-		local RunService = game:GetService("RunService")
 
-		local hum: Humanoid = LocalCharacter:WaitForChild("Humanoid")
-		local root: BasePart = LocalCharacter:WaitForChild("HumanoidRootPart")
+		local hum = LocalCharacter:WaitForChild("Humanoid")
+		local root = LocalCharacter:WaitForChild("HumanoidRootPart")
 
-		local function getGoalPosition()
+		local function getGoal()
 			if guard and guard ~= "" then
 				return (targetChar:GetPivot() * CFrame.new(3, 0, -2)).Position
 			end
 			return targetChar:GetPivot().Position
 		end
 
-		local currentPath = nil
-		local waypoints = nil
-		local waypointIndex = 1
-		local recomputeCooldown = 0
-		local lastGoal = nil
-
-		local function computePath()
-			local goal = getGoalPosition()
-
+		local function computePath(goal)
 			local path = PathfindingService:CreatePath({
 				AgentRadius = 2,
 				AgentHeight = 5,
@@ -191,47 +182,43 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 
 			path:ComputeAsync(root.Position, goal)
 
-			if path.Status == Enum.PathStatus.Success then
-				currentPath = path
-				waypoints = path:GetWaypoints()
-				waypointIndex = 1
-				lastGoal = goal
-			else
-				currentPath = nil
-				waypoints = nil
+			if path.Status ~= Enum.PathStatus.Success then
+				return nil
 			end
+
+			return path:GetWaypoints()
 		end
 
-		computePath()
+		local function followPath(waypoints)
+			for i = 1, #waypoints do
+				local wp = waypoints[i]
 
-		followConn = RunService.RenderStepped:Connect(function(dt)
-			if not LocalCharacter or not LocalCharacter:FindFirstChild("HumanoidRootPart") then
-				followConn:Disconnect()
-				return
-			end
-
-			local goal = getGoalPosition()
-
-			recomputeCooldown -= dt
-
-			if not currentPath
-				or not waypoints
-				or waypointIndex > #waypoints
-				or (lastGoal and (goal - lastGoal).Magnitude > 5)
-				or recomputeCooldown <= 0 then
-
-				recomputeCooldown = 0.5
-				computePath()
-				return
-			end
-
-			local waypoint = waypoints[waypointIndex]
-			if waypoint then
-				hum:MoveTo(waypoint.Position)
-
-				if (root.Position - waypoint.Position).Magnitude < 3 then
-					waypointIndex += 1
+				if wp.Action == Enum.PathWaypointAction.Jump then
+					hum.Jump = true
 				end
+
+				hum:MoveTo(wp.Position)
+
+				local reached = hum.MoveToFinished:Wait()
+				if not reached then
+					return false
+				end
+			end
+
+			return true
+		end
+
+		followConn = game:GetService("RunService").Heartbeat:Connect(function()
+			if not LocalCharacter or not root or not hum then
+				if followConn then followConn:Disconnect() end
+				return
+			end
+
+			local goal = getGoal()
+			local waypoints = computePath(goal)
+
+			if waypoints then
+				followPath(waypoints)
 			end
 		end)
 	end,
