@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
+local RunService = game:GetService("RunService")
 
 local canAffectLocalPlayer = true
 local prefix = "?"
@@ -9,6 +10,8 @@ local admins = {
 
 local LocalPlayer: Player? = Players.LocalPlayer
 local LocalCharacter: Model? = LocalPlayer.Character
+
+local followConn: RBXScriptConnection? = nil
 
 local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolean)} = {
 	["fling"] = function(target)
@@ -132,15 +135,49 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 
 	["talk"] = function(target, message: string)
 		sendMessage(message)
+		return true
 	end;
 
 	["tp"] = function(target)
 		local targetCharacter = target.Character
 		if not targetCharacter then
-			return
+			return false
 		end
 
 		LocalCharacter:PivotTo(targetCharacter:GetPivot())
+	end,
+	
+	["follow"] = function(target)
+		if followConn then
+			followConn:Disconnect()
+			followConn = nil
+		end
+		
+		local targetChar: Model? = target.Character
+		if not targetChar then
+			warn(`No target character found`)
+			return false
+		end
+		
+		local hum: Humanoid = LocalCharacter:WaitForChild("Humanoid")
+		
+		followConn = RunService.RenderStepped:Connect(function()
+			if not LocalCharacter or not LocalCharacter:FindFirstChild("HumanoidRootPart") then
+				followConn:Disconnect()
+				return false
+			end
+			
+			hum:MoveTo(targetChar:GetPivot().Position)
+		end)
+	end,
+	
+	["stopfollow"] = function()
+		if followConn then
+			followConn:Disconnect()
+			followConn = nil
+		end
+		
+		return true
 	end,
 }
 
