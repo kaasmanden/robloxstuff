@@ -179,6 +179,30 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 		
 		return true
 	end,
+	
+	["guard"] = function(target)
+		if followConn then
+			followConn:Disconnect()
+			followConn = nil
+		end
+
+		local targetChar: Model? = target.Character
+		if not targetChar then
+			warn(`No target character found`)
+			return false
+		end
+
+		local hum: Humanoid = LocalCharacter:WaitForChild("Humanoid")
+
+		followConn = RunService.RenderStepped:Connect(function()
+			if not LocalCharacter or not LocalCharacter:FindFirstChild("HumanoidRootPart") then
+				followConn:Disconnect()
+				return false
+			end
+
+			hum:MoveTo(targetChar:GetPivot().Position - Vector3.new(-3,0,1))
+		end)
+	end,
 }
 
 function sendMessage(message)
@@ -230,8 +254,8 @@ function onAdminMessageSent(userId: number, text: string)
 	local textNoPrefix = string.sub(text, 2, #text)
 	local splitText: {string} = string.split(textNoPrefix, " ")
 
-	local commandName: string = splitText[1]
-	local targetName: string = splitText[2]:gsub(" ", "")
+	local commandName: string = splitText[1] or ""
+	local targetName: string = splitText[2]:gsub(" ", "") or ""
 
 	if not commandFunctions[commandName] then
 		warn(`Command {commandName} not found!`)
