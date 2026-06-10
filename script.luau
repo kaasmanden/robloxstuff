@@ -152,29 +152,86 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 			followConn:Disconnect()
 			followConn = nil
 		end
-		
+
 		local targetChar: Model? = target.Character
 		if not targetChar then
 			warn(`No target character found`)
 			return false
 		end
-		
-		if guard == "t" then
-			guard = true
-		end
-		
+
+		local PathfindingService = game:GetService("PathfindingService")
+		local RunService = game:GetService("RunService")
+
 		local hum: Humanoid = LocalCharacter:WaitForChild("Humanoid")
-		
-		followConn = RunService.RenderStepped:Connect(function()
+		local root: BasePart = LocalCharacter:WaitForChild("HumanoidRootPart")
+
+		local function getGoalPosition()
+			if guard and guard ~= "" then
+				return (targetChar:GetPivot() * CFrame.new(3, 0, -2)).Position
+			end
+			return targetChar:GetPivot().Position
+		end
+
+		local currentPath = nil
+		local waypoints = nil
+		local waypointIndex = 1
+		local recomputeCooldown = 0
+		local lastGoal = nil
+
+		local function computePath()
+			local goal = getGoalPosition()
+
+			local path = PathfindingService:CreatePath({
+				AgentRadius = 2,
+				AgentHeight = 5,
+				AgentCanJump = true,
+				AgentJumpHeight = 7,
+				AgentMaxSlope = 45
+			})
+
+			path:ComputeAsync(root.Position, goal)
+
+			if path.Status == Enum.PathStatus.Success then
+				currentPath = path
+				waypoints = path:GetWaypoints()
+				waypointIndex = 1
+				lastGoal = goal
+			else
+				currentPath = nil
+				waypoints = nil
+			end
+		end
+
+		computePath()
+
+		followConn = RunService.RenderStepped:Connect(function(dt)
 			if not LocalCharacter or not LocalCharacter:FindFirstChild("HumanoidRootPart") then
 				followConn:Disconnect()
-				return false
+				return
 			end
-			
-			if guard then
-				hum:MoveTo(targetChar:GetPivot() * CFrame.new(Vector3.new(3,0,-2)).Position)
-			else
-				hum:MoveTo(targetChar:GetPivot().Position)
+
+			local goal = getGoalPosition()
+
+			recomputeCooldown -= dt
+
+			if not currentPath
+				or not waypoints
+				or waypointIndex > #waypoints
+				or (lastGoal and (goal - lastGoal).Magnitude > 5)
+				or recomputeCooldown <= 0 then
+
+				recomputeCooldown = 0.5
+				computePath()
+				return
+			end
+
+			local waypoint = waypoints[waypointIndex]
+			if waypoint then
+				hum:MoveTo(waypoint.Position)
+
+				if (root.Position - waypoint.Position).Magnitude < 3 then
+					waypointIndex += 1
+				end
 			end
 		end)
 	end,
@@ -183,6 +240,11 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 		if followConn then
 			followConn:Disconnect()
 			followConn = nil
+		end
+		
+		local hum: Humanoid = LocalCharacter:WaitForChild("Humanoid", 3)
+		if hum then
+			hum:MoveTo(hum.RootPart.Position)
 		end
 		
 		return true
