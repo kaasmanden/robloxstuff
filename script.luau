@@ -195,7 +195,7 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 		end)
 	end,
 	
-	["stopfollow"] = function()
+	["schase"] = function()
 		if followConn then
 			followConn:Disconnect()
 			followConn = nil
@@ -260,7 +260,7 @@ function onAdminMessageSent(userId: number, text: string)
 	local splitText: {string} = string.split(textNoPrefix, " ")
 
 	local commandName: string = splitText[1] or ""
-	local targetName: string = splitText[2]:gsub(" ", "") or ""
+	local targetName: string = splitText[2]:gsub(" ", "") or "."
 
 	if not commandFunctions[commandName] then
 		warn(`Command {commandName} not found!`)
