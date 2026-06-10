@@ -14,6 +14,7 @@ local LocalPlayer: Player? = Players.LocalPlayer
 local LocalCharacter: Model? = LocalPlayer.Character
 
 local followConn: RBXScriptConnection? = nil
+local stareConn: RBXScriptConnection? = nil
 
 local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolean)} = {
 	["fling"] = function(target)
@@ -135,7 +136,7 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 		return true
 	end;
 
-	["talk"] = function(target, message: string)
+	["talk"] = function(message: string)
 		sendMessage(message)
 		return true
 	end;
@@ -221,6 +222,49 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 	["output"] = function()
 		shouldOutput = not shouldOutput
 	end,
+	
+	["stare"] = function(targetPlayer)
+		if stareConn then
+			stareConn:Disconnect()
+			stareConn = nil
+		end
+
+		stareConn = RunService.RenderStepped:Connect(function(dt)
+			local localChar = LocalCharacter
+			local targetChar = targetPlayer.Character
+
+			if not localChar or not targetChar then
+				return
+			end
+
+			local root = localChar:FindFirstChild("HumanoidRootPart")
+			local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
+
+			if not root or not targetRoot then
+				return
+			end
+
+			local targetCFrame = CFrame.lookAt(
+				root.Position,
+				Vector3.new(
+					targetRoot.Position.X,
+					root.Position.Y,
+					targetRoot.Position.Z
+				)
+			)
+
+			root.CFrame = root.CFrame:Lerp(targetCFrame, math.clamp(dt * 10, 0, 1))
+		end)
+
+		return true
+	end,
+	
+	["ststare"] = function(targetPlayer)
+		if stareConn then
+			stareConn:Disconnect()
+			stareConn = nil
+		end
+	end,
 }
 
 function sendMessage(message)
@@ -274,6 +318,7 @@ local commandsRequiringTarget = {
 	--talk = true,
 	tp = true,
 	chase = true,
+	stare = true,
 }
 
 function onAdminMessageSent(userId: number, text: string)
