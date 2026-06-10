@@ -161,7 +161,7 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 
 		-- Jump configuration
 		local lastJumpTime = 0
-		local JUMP_COOLDOWN = 1.5 -- Seconds to wait between jumps
+		local JUMP_COOLDOWN = 0 -- Seconds to wait between jumps
 
 		followConn = RunService.RenderStepped:Connect(function()
 			local localCharacter = LocalCharacter
