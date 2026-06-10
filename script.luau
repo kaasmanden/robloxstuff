@@ -147,7 +147,7 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 		LocalCharacter:PivotTo(targetCharacter:GetPivot())
 	end,
 	
-	["follow"] = function(target, guard: string?)
+	["chase"] = function(target, guard: string?)
 		if followConn then
 			followConn:Disconnect()
 			followConn = nil
