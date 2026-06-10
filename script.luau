@@ -219,7 +219,7 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 					root.CFrame = root.CFrame:Lerp(targetFacing, 0.25)
 				elseif dist > 20 then
 					localCharacter:PivotTo(targetRoot.CFrame)
-				elseif dist > 6 then
+				elseif dist > 10 then
 					if currentTime - lastCheckTime >= 1 then
 						local movedDist = (targetRoot.Position - lastTargetPos).Magnitude
 
