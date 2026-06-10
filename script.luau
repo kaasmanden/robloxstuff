@@ -195,6 +195,17 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 					(targetCharacter.HumanoidRootPart.CFrame * CFrame.new(Vector3.zero)).Position
 				)
 			end
+			
+			local dist = (localCharacter.PrimaryPart.Position - targetCharacter.PrimaryPart.Position).Magnitude
+			if dist < 1 then
+				local root = localCharacter.HumanoidRootPart
+				local targetRoot = targetCharacter.HumanoidRootPart
+
+				root.CFrame = root.CFrame:Lerp(
+					CFrame.new(root.Position) * (targetRoot.CFrame - targetRoot.Position),
+					0.25
+				)
+			end
 		end)
 	end,
 	
