@@ -156,19 +156,22 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 			followConn = nil
 		end
 
-		-- Jump configuration
-		local lastJumpTime = 0
-		local JUMP_COOLDOWN = 0 -- Seconds to wait between jumps
+		---- Jump configuration
+		--local lastJumpTime = 0
+		--local JUMP_COOLDOWN = 0 -- Seconds to wait between jumps
+
+		local lastCheckTime = os.clock()
+		local lastTargetPos = nil
 
 		followConn = RunService.RenderStepped:Connect(function()
 			local localCharacter = LocalCharacter
-			
+
 			local targetChar: Model? = target.Character
 			if not targetChar then
 				warn(`No target character found`)
 				return false
 			end
-			
+
 			local targetCharacter = targetChar
 
 			if not localCharacter or not localCharacter:FindFirstChild("HumanoidRootPart") or not targetCharacter or not targetCharacter:FindFirstChild("HumanoidRootPart") then
@@ -179,33 +182,28 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 			local curPv = localCharacter:GetPivot()
 			local targetPv = targetCharacter:GetPivot()
 
-			-- Jump logic with cooldown check
 			local currentTime = os.clock()
+
 			if (curPv.Y + 1 < targetPv.Y) and (currentTime - lastJumpTime >= JUMP_COOLDOWN) then
 				localCharacter.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
 				lastJumpTime = currentTime
 			end
 
-			-- Movement logic
 			local endPos
-			
+
 			if guard and guard ~= "" then
 				endPos = (targetCharacter.HumanoidRootPart.CFrame * CFrame.new(Vector3.new(3, 0, 2))).Position
-				localCharacter.Humanoid:MoveTo(
-					(targetCharacter.HumanoidRootPart.CFrame * CFrame.new(Vector3.new(3, 0, 2))).Position
-				)
+				localCharacter.Humanoid:MoveTo(endPos)
 			else
-				endPos = (targetCharacter.HumanoidRootPart.CFrame * CFrame.new(Vector3.zero)).Position
-				localCharacter.Humanoid:MoveTo(
-					(targetCharacter.HumanoidRootPart.CFrame * CFrame.new(Vector3.zero)).Position
-				)
+				endPos = targetCharacter.HumanoidRootPart.Position
+				localCharacter.Humanoid:MoveTo(endPos)
 			end
-			
+
 			local targetHum = targetCharacter:FindFirstChildOfClass("Humanoid")
 			local targetRoot = targetCharacter:FindFirstChild("HumanoidRootPart")
 
 			if targetHum and targetRoot then
-				
+
 				local dist = (localCharacter.PrimaryPart.Position - endPos).Magnitude
 
 				if dist < 1 then
@@ -219,6 +217,21 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 					)
 
 					root.CFrame = root.CFrame:Lerp(targetFacing, 0.25)
+				end
+
+				if not lastTargetPos then
+					lastTargetPos = targetRoot.Position
+				end
+
+				if currentTime - lastCheckTime >= 1 then
+					local movedDist = (targetRoot.Position - lastTargetPos).Magnitude
+
+					if movedDist < 3 then
+						localCharacter:PivotTo(targetRoot.CFrame)
+					end
+
+					lastTargetPos = targetRoot.Position
+					lastCheckTime = currentTime
 				end
 			end
 		end)
