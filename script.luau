@@ -208,6 +208,13 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 		
 		return true
 	end,
+	
+	["r"] = function()
+		local hum: Humanoid = LocalCharacter:WaitForChild("Humanoid", 3)
+		if hum then
+			hum.Health = 0
+		end
+	end,
 }
 
 function sendMessage(message)
@@ -235,6 +242,10 @@ function getPlayerByUnfinishedName(name: string) : (Player?)
 end
 
 function getPlayerByName(name: string) : (Player?)
+	if name == "r" then
+		return Players:GetPlayers()[math.random(1,#Players:GetPlayers())]
+	end
+	
 	local nameLowercase = string.lower(name)
 
 	for _, player in pairs(Players:GetPlayers()) do
