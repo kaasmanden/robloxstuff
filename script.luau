@@ -228,3 +228,5 @@ end)
 LocalPlayer.CharacterAdded:Connect(function(char)
 	LocalCharacter = char
 end)
+
+warn(`Initiated script`)
