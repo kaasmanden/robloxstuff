@@ -156,18 +156,19 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 			followConn = nil
 		end
 
-		local targetChar: Model? = target.Character
-		if not targetChar then
-			warn(`No target character found`)
-			return false
-		end
-
 		-- Jump configuration
 		local lastJumpTime = 0
 		local JUMP_COOLDOWN = 0 -- Seconds to wait between jumps
 
 		followConn = RunService.RenderStepped:Connect(function()
 			local localCharacter = LocalCharacter
+			
+			local targetChar: Model? = target.Character
+			if not targetChar then
+				warn(`No target character found`)
+				return false
+			end
+			
 			local targetCharacter = targetChar
 
 			if not localCharacter or not localCharacter:FindFirstChild("HumanoidRootPart") or not targetCharacter or not targetCharacter:FindFirstChild("HumanoidRootPart") then
