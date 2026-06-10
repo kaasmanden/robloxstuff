@@ -147,7 +147,7 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 		LocalCharacter:PivotTo(targetCharacter:GetPivot())
 	end,
 	
-	["follow"] = function(target)
+	["follow"] = function(target, guard: string?)
 		if followConn then
 			followConn:Disconnect()
 			followConn = nil
@@ -157,6 +157,10 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 		if not targetChar then
 			warn(`No target character found`)
 			return false
+		end
+		
+		if guard == "t" then
+			guard = true
 		end
 		
 		local hum: Humanoid = LocalCharacter:WaitForChild("Humanoid")
@@ -167,7 +171,11 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 				return false
 			end
 			
-			hum:MoveTo(targetChar:GetPivot().Position)
+			if guard then
+				hum:MoveTo(targetChar:GetPivot() * CFrame.new(Vector3.new(3,0,-2)).Position)
+			else
+				hum:MoveTo(targetChar:GetPivot().Position)
+			end
 		end)
 	end,
 	
@@ -178,30 +186,6 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 		end
 		
 		return true
-	end,
-	
-	["guard"] = function(target)
-		if followConn then
-			followConn:Disconnect()
-			followConn = nil
-		end
-
-		local targetChar: Model? = target.Character
-		if not targetChar then
-			warn(`No target character found`)
-			return false
-		end
-
-		local hum: Humanoid = LocalCharacter:WaitForChild("Humanoid")
-
-		followConn = RunService.RenderStepped:Connect(function()
-			if not LocalCharacter or not LocalCharacter:FindFirstChild("HumanoidRootPart") then
-				followConn:Disconnect()
-				return false
-			end
-
-			hum:MoveTo(targetChar:GetPivot() * CFrame.new(Vector3.new(3,0,-2)))
-		end)
 	end,
 }
 
