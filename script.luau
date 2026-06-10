@@ -176,8 +176,8 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 			local targetCharacter = targetChar
 
 			if not localCharacter or not localCharacter:FindFirstChild("HumanoidRootPart") or not targetCharacter or not targetCharacter:FindFirstChild("HumanoidRootPart") then
-				followConn:Disconnect()
-				return false
+				task.wait()
+				return
 			end
 
 			local curPv = localCharacter:GetPivot()
