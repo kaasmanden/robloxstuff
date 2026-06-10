@@ -169,8 +169,7 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 
 			local targetChar: Model? = target.Character
 			if not targetChar then
-				warn(`No target character found`)
-				return false
+				return
 			end
 
 			local targetCharacter = targetChar
