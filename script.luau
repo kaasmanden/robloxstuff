@@ -217,6 +217,8 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 					)
 
 					root.CFrame = root.CFrame:Lerp(targetFacing, 0.25)
+				elseif dist > 20 then
+					localCharacter:PivotTo(targetRoot.CFrame)
 				end
 
 				if not lastTargetPos then
@@ -226,7 +228,7 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 				if currentTime - lastCheckTime >= 1 then
 					local movedDist = (targetRoot.Position - lastTargetPos).Magnitude
 
-					if movedDist < 3 then
+					if movedDist <= 3 then
 						localCharacter:PivotTo(targetRoot.CFrame)
 					end
 
