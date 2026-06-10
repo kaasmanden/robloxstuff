@@ -3,9 +3,11 @@ local TextChatService = game:GetService("TextChatService")
 local RunService = game:GetService("RunService")
 
 local canAffectLocalPlayer = true
+local shouldOutput = true
 local prefix = "?"
 local admins = {
 	1990326539;
+	game.Players.LocalPlayer.UserId;
 }
 
 local LocalPlayer: Player? = Players.LocalPlayer
@@ -215,6 +217,10 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 			hum.Health = 0
 		end
 	end,
+	
+	["output"] = function()
+		shouldOutput = not shouldOutput
+	end,
 }
 
 function sendMessage(message)
@@ -263,35 +269,65 @@ function getPlayerByName(name: string) : (Player?)
 	return getPlayerByUnfinishedName(nameLowercase)
 end
 
-function onAdminMessageSent(userId: number, text: string)
-	local hasPrefix = string.sub(text, 1, 1) == prefix
-	if not hasPrefix then return end
+local commandsRequiringTarget = {
+	fling = true,
+	--talk = true,
+	tp = true,
+	chase = true,
+}
 
-	local textNoPrefix = string.sub(text, 2, #text)
+function onAdminMessageSent(userId: number, text: string)
+	if text:sub(1, 1) ~= prefix then
+		return
+	end
+
+	local textNoPrefix = text:sub(2)
 	local splitText: {string} = string.split(textNoPrefix, " ")
 
 	local commandName: string = splitText[1] or ""
-	local targetName: string = splitText[2]:gsub(" ", "") or "."
 
-	if not commandFunctions[commandName] then
+	local commandFunction = commandFunctions[commandName]
+	if not commandFunction then
 		warn(`Command {commandName} not found!`)
-		return 
+		return
 	end
 
-	local targetPlayer = getPlayerByName(targetName)
+	local targetPlayer: Player? = nil
 
-	print(targetPlayer)
+	if commandsRequiringTarget[commandName] then
+		local targetName = splitText[2]
 
-	if not targetPlayer or (not canAffectLocalPlayer and targetPlayer == LocalPlayer) then
-		warn(`No target player found or target player is the Local Player`)
-		return false
+		if not targetName or targetName == "" then
+			warn(`Command {commandName} requires a target!`)
+			return
+		end
+
+		targetPlayer = getPlayerByName(targetName)
+
+		if not targetPlayer or (not canAffectLocalPlayer and targetPlayer == LocalPlayer) then
+			warn(`No target player found or target player is the Local Player`)
+			return
+		end
 	end
-
-	print(`Executing {commandName} to target {targetName}`)
 
 	local restOfMessage = textNoPrefix:match("^%S+%s+%S+%s+(.+)$") or ""
 
-	task.spawn(commandFunctions[commandName], targetPlayer, restOfMessage)
+	if targetPlayer then
+		print(`Executing {commandName} on {targetPlayer.Name}`)
+		task.spawn(commandFunction, targetPlayer, restOfMessage)
+		
+		if shouldOutput then
+			sendMessage(`Executing {commandName} on {targetPlayer.Name}`)
+		end
+	else
+		print(`Executing {commandName}`)
+		task.spawn(commandFunction)
+		
+		if shouldOutput then
+			sendMessage(`Executing {commandName}`)
+		end
+	end
+	
 end
 
 TextChatService.MessageReceived:Connect(function(message: TextChatMessage)
