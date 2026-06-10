@@ -157,10 +157,11 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 		end
 
 		---- Jump configuration
-		--local lastJumpTime = 0
-		--local JUMP_COOLDOWN = 0 -- Seconds to wait between jumps
+		local lastJumpTime = 0
+		local JUMP_COOLDOWN = 0 -- Seconds to wait between jumps
 
 		local lastCheckTime = os.clock()
+
 		local lastTargetPos = nil
 
 		followConn = RunService.RenderStepped:Connect(function()
