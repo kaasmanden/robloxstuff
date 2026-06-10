@@ -200,7 +200,7 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 				return false
 			end
 
-			hum:MoveTo(targetChar:GetPivot().Position * Vector3.new(-3,0,1))
+			hum:MoveTo(targetChar:GetPivot() * CFrame.new(Vector3.new(3,0,-2)))
 		end)
 	end,
 }
