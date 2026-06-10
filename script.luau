@@ -186,11 +186,15 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 			end
 
 			-- Movement logic
+			local endPos
+			
 			if guard and guard ~= "" then
+				endPos = (targetCharacter.HumanoidRootPart.CFrame * CFrame.new(Vector3.new(3, 0, -2))).Position
 				localCharacter.Humanoid:MoveTo(
 					(targetCharacter.HumanoidRootPart.CFrame * CFrame.new(Vector3.new(3, 0, -2))).Position
 				)
 			else
+				endPos = (targetCharacter.HumanoidRootPart.CFrame * CFrame.new(Vector3.zero)).Position
 				localCharacter.Humanoid:MoveTo(
 					(targetCharacter.HumanoidRootPart.CFrame * CFrame.new(Vector3.zero)).Position
 				)
@@ -200,8 +204,8 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 			local targetRoot = targetCharacter:FindFirstChild("HumanoidRootPart")
 
 			if targetHum and targetRoot then
-				local predictedPos = targetRoot.Position + (targetHum.MoveDirection * 2)
-				local dist = (localCharacter.PrimaryPart.Position - predictedPos).Magnitude
+				
+				local dist = (localCharacter.PrimaryPart.Position - endPos).Magnitude
 
 				if dist < 1 then
 					local root = localCharacter.HumanoidRootPart
