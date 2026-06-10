@@ -190,9 +190,9 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 			local endPos
 			
 			if guard and guard ~= "" then
-				endPos = (targetCharacter.HumanoidRootPart.CFrame * CFrame.new(Vector3.new(3, 0, -2))).Position
+				endPos = (targetCharacter.HumanoidRootPart.CFrame * CFrame.new(Vector3.new(3, 0, 2))).Position
 				localCharacter.Humanoid:MoveTo(
-					(targetCharacter.HumanoidRootPart.CFrame * CFrame.new(Vector3.new(3, 0, -2))).Position
+					(targetCharacter.HumanoidRootPart.CFrame * CFrame.new(Vector3.new(3, 0, 2))).Position
 				)
 			else
 				endPos = (targetCharacter.HumanoidRootPart.CFrame * CFrame.new(Vector3.zero)).Position
