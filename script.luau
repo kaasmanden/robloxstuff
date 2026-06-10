@@ -196,15 +196,25 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 				)
 			end
 			
-			local dist = (localCharacter.PrimaryPart.Position - targetCharacter.PrimaryPart.Position).Magnitude
-			if dist < 1 then
-				local root = localCharacter.HumanoidRootPart
-				local targetRoot = targetCharacter.HumanoidRootPart
+			local targetHum = targetCharacter:FindFirstChildOfClass("Humanoid")
+			local targetRoot = targetCharacter:FindFirstChild("HumanoidRootPart")
 
-				root.CFrame = root.CFrame:Lerp(
-					CFrame.new(root.Position) * (targetRoot.CFrame - targetRoot.Position),
-					0.25
-				)
+			if targetHum and targetRoot then
+				local predictedPos = targetRoot.Position + (targetHum.MoveDirection * 2)
+				local dist = (localCharacter.PrimaryPart.Position - predictedPos).Magnitude
+
+				if dist < 1 then
+					local root = localCharacter.HumanoidRootPart
+
+					local lookVector = targetRoot.CFrame.LookVector
+
+					local targetFacing = CFrame.lookAt(
+						root.Position,
+						root.Position + Vector3.new(lookVector.X, 0, lookVector.Z)
+					)
+
+					root.CFrame = root.CFrame:Lerp(targetFacing, 0.25)
+				end
 			end
 		end)
 	end,
