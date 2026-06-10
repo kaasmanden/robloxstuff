@@ -221,13 +221,17 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 					localCharacter:PivotTo(targetRoot.CFrame)
 				elseif dist > 10 then
 					if currentTime - lastCheckTime >= 1 then
-						local movedDist = (targetRoot.Position - lastTargetPos).Magnitude
+						local playerRoot = localCharacter:FindFirstChild("HumanoidRootPart")
+						local targetRoot = targetCharacter:FindFirstChild("HumanoidRootPart")
 
-						if movedDist <= 3 then
-							localCharacter:PivotTo(targetRoot.CFrame)
+						if playerRoot and targetRoot then
+							local distToPlayer = (playerRoot.Position - targetRoot.Position).Magnitude
+
+							if distToPlayer >= 10 then
+								localCharacter:PivotTo(targetRoot.CFrame)
+							end
 						end
 
-						lastTargetPos = targetRoot.Position
 						lastCheckTime = currentTime
 					end
 				end
