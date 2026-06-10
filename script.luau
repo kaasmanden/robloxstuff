@@ -129,17 +129,17 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 
 		return true
 	end;
-	
+
 	["talk"] = function(target, message: string)
 		sendMessage(message)
 	end;
-	
+
 	["tp"] = function(target)
 		local targetCharacter = target.Character
 		if not targetCharacter then
 			return
 		end
-		
+
 		LocalCharacter:PivotTo(targetCharacter:GetPivot())
 	end,
 }
@@ -158,71 +158,71 @@ function getPlayerByUnfinishedName(name: string) : (Player?)
 			return player
 		end
 	end
-	
+
 	for _, player in pairs(Players:GetPlayers()) do
 		if string.find(string.lower(player.DisplayName), name) then
 			return player
 		end
 	end
-	
+
 	return nil
 end
 
 function getPlayerByName(name: string) : (Player?)
 	local nameLowercase = string.lower(name)
-	
+
 	for _, player in pairs(Players:GetPlayers()) do
 		if nameLowercase == string.lower(player.Name) then
 			return player
 		end
 	end
-	
+
 	for _, player in pairs(Players:GetPlayers()) do
 		if nameLowercase == string.lower(player.DisplayName) then
 			return player
 		end
 	end
-	
+
 	return getPlayerByUnfinishedName(nameLowercase)
 end
 
 function onAdminMessageSent(userId: number, text: string)
 	local hasPrefix = string.sub(text, 1, 1) == prefix
 	if not hasPrefix then return end
-	
+
 	local textNoPrefix = string.sub(text, 2, #text)
 	local splitText: {string} = string.split(textNoPrefix, " ")
-	
+
 	local commandName: string = splitText[1]
 	local targetName: string = splitText[2]:gsub(" ", "")
-	
+
 	if not commandFunctions[commandName] then
 		warn(`Command {commandName} not found!`)
 		return 
 	end
-	
+
 	local targetPlayer = getPlayerByName(targetName)
-	
+
 	print(targetPlayer)
-	
+
 	if not targetPlayer or (not canAffectLocalPlayer and targetPlayer == LocalPlayer) then
 		warn(`No target player found or target player is the Local Player`)
 		return false
 	end
-	
+
 	print(`Executing {commandName} to target {targetName}`)
-	
+
 	local restOfMessage = textNoPrefix:match("^%S+%s+%S+%s+(.+)$") or ""
-	
+
 	task.spawn(commandFunctions[commandName], targetPlayer, restOfMessage)
 end
 
 TextChatService.MessageReceived:Connect(function(message: TextChatMessage)
 	local senderTextSource: TextSource? = message.TextSource
 	if not senderTextSource then return end
-	--if table.find(admins, senderTextSource.UserId) then
+	if table.find(admins, senderTextSource.UserId) then
 		onAdminMessageSent(senderTextSource.UserId, message.Text, message)
-	--end
+	end
 end)
 
 LocalPlayer.CharacterAdded:Connect(function(char)
