@@ -217,9 +217,9 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 					)
 
 					root.CFrame = root.CFrame:Lerp(targetFacing, 0.25)
-				elseif dist > 20 then
+				elseif dist > 40 then
 					localCharacter:PivotTo(targetRoot.CFrame)
-				elseif dist > 10 then
+				elseif dist > 23 then
 					if currentTime - lastCheckTime >= 1 then
 						local playerRoot = localCharacter:FindFirstChild("HumanoidRootPart")
 						local targetRoot = targetCharacter:FindFirstChild("HumanoidRootPart")
