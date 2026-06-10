@@ -178,7 +178,7 @@ local commandFunctions: {(target: Player, arg1: string, arg2: string) -> (boolea
 			-- Jump logic with cooldown check
 			local currentTime = os.clock()
 			if (curPv.Y + 1 < targetPv.Y) and (currentTime - lastJumpTime >= JUMP_COOLDOWN) then
-				localCharacter.Humanoid.Jump = true
+				localCharacter.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
 				lastJumpTime = currentTime
 			end
 
